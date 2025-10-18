@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-orange: #d29922;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+        }
+        
+        body {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .navbar {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card {
+            background-color: var(--bg-secondary) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .ad-card {
+            transition: transform 0.2s;
+            border-left: 4px solid var(--accent-blue) !important;
+            background-color: var(--bg-tertiary) !important;
+        }
+        .ad-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(88, 166, 255, 0.2);
+        }
+        
+        .metric-badge {
+            font-size: 0.85em;
+        }
+        
+        .competitor-card {
+            border-left: 4px solid var(--accent-green) !important;
+            transition: all 0.2s ease;
+        }
+        
+        .competitor-card:hover {
+            background-color: var(--bg-primary) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(63, 185, 80, 0.3);
+        }
+        
+        .search-form {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .insights-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            color: var(--text-primary);
+        }
+        
+        .form-control, .form-select {
+            background-color: var(--bg-tertiary) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-tertiary) !important;
+            border-color: var(--accent-blue) !important;
+            box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .btn-light {
+            background-color: var(--accent-blue) !important;
+            border-color: var(--accent-blue) !important;
+            color: white !important;
+        }
+        
+        .btn-light:hover {
+            background-color: #4493f8 !important;
+            border-color: #4493f8 !important;
+        }
+        
+        .btn-outline-primary {
+            color: var(--accent-blue) !important;
+            border-color: var(--accent-blue) !important;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--accent-blue) !important;
+            border-color: var(--accent-blue) !important;
+        }
+        
+        .alert-danger {
+            background-color: rgba(248, 81, 73, 0.1) !important;
+            border-color: var(--accent-red) !important;
+            color: var(--accent-red) !important;
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        .bg-success {
+            background-color: var(--accent-green) !important;
+        }
+        
+        .bg-warning {
+            background-color: var(--accent-orange) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--accent-blue) !important;
+        }
+        
+        .bg-secondary {
+            background-color: var(--text-secondary) !important;
+        }
+        
+        .ad-preview {
+            width: 100%;
+            height: 200px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .ad-preview-placeholder {
+            background-color: var(--bg-tertiary);
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .impressions-data {
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+        
+        .spend-data {
+            font-weight: 600;
+            color: var(--accent-orange);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-dollar me-2"></i>Meta Ads Spy
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/competitors">
+                    <i class="fas fa-users me-1"></i>Competitors
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <% if (error) { %>
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i><%= error %>
+            </div>
+        <% } %>
+
+        <!-- Search Form -->
+        <div class="search-form mb-4">
+            <h2 class="mb-3"><i class="fas fa-search me-2"></i>Search Meta Ads</h2>
+            <form method="POST" action="/search">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="searchTerms" class="form-label">Search Terms</label>
+                        <input type="text" class="form-control" id="searchTerms" name="searchTerms" 
+                               placeholder="e.g., fitness, marketing, ecommerce"
+                               value="<%= results ? results.searchParams.searchTerms || '' : '' %>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="countries" class="form-label">Countries (comma-separated)</label>
+                        <input type="text" class="form-control" id="countries" name="countries" 
+                               placeholder="US,GB,CA or leave empty for all"
+                               value="<%= results ? results.searchParams.countries || '' : '' %>">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="limit" class="form-label">Results Limit</label>
+                        <select class="form-select" id="limit" name="limit">
+                            <option value="50" <%= results && results.searchParams.limit == 50 ? 'selected' : '' %>>50</option>
+                            <option value="100" <%= !results || results.searchParams.limit == 100 ? 'selected' : '' %>>100</option>
+                            <option value="200" <%= results && results.searchParams.limit == 200 ? 'selected' : '' %>>200</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="sortBy" class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy" name="sortBy">
+                            <option value="impressions" <%= !results || results.searchParams.sortBy === 'impressions' ? 'selected' : '' %>>Impressions</option>
+                            <option value="spend" <%= results && results.searchParams.sortBy === 'spend' ? 'selected' : '' %>>Spend</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="sortOrder" class="form-label">Sort Order</label>
+                        <select class="form-select" id="sortOrder" name="sortOrder">
+                            <option value="desc" <%= !results || results.searchParams.sortOrder === 'desc' ? 'selected' : '' %>>Highest First</option>
+                            <option value="asc" <%= results && results.searchParams.sortOrder === 'asc' ? 'selected' : '' %>>Lowest First</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="minImpressions" class="form-label">Min Impressions</label>
+                        <input type="number" class="form-control" id="minImpressions" name="minImpressions" 
+                               value="<%= results ? results.searchParams.minImpressions || '' : '' %>">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="maxImpressions" class="form-label">Max Impressions</label>
+                        <input type="number" class="form-control" id="maxImpressions" name="maxImpressions"
+                               value="<%= results ? results.searchParams.maxImpressions || '' : '' %>">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="minSpend" class="form-label">Min Spend ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="minSpend" name="minSpend"
+                               value="<%= results ? results.searchParams.minSpend || '' : '' %>">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="maxSpend" class="form-label">Max Spend ($)</label>
+                        <input type="number" step="0.01" class="form-control" id="maxSpend" name="maxSpend"
+                               value="<%= results ? results.searchParams.maxSpend || '' : '' %>">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-light btn-lg">
+                    <i class="fas fa-search me-2"></i>Search Ads
+                </button>
+            </form>
+        </div>
+
+        <% if (results) { %>
+            <!-- Insights Overview -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card insights-card">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Search Insights</h5>
+                            <div class="row text-center">
+                                <div class="col-md-2">
+                                    <div class="h4"><%= results.insights.totalAds.toLocaleString() %></div>
+                                    <small>Total Ads</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="h4"><%= Math.round(results.insights.totalImpressions).toLocaleString() %></div>
+                                    <small>Total Impressions</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="h4">$<%= Math.round(results.insights.totalSpend).toLocaleString() %></div>
+                                    <small>Total Spend</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="h4"><%= Math.round(results.insights.averageImpressions).toLocaleString() %></div>
+                                    <small>Avg Impressions</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="h4">$<%= Math.round(results.insights.averageSpend) %></div>
+                                    <small>Avg Spend</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="h4"><%= results.insights.uniqueCompetitors %></div>
+                                    <small>Competitors</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Competitors -->
+            <% if (results.competitors && results.competitors.length > 0) { %>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Competitors by Impressions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <% results.competitors.slice(0, 6).forEach(competitor => { %>
+                                <div class="col-md-4 mb-3">
+                                    <div class="card competitor-card h-100" style="cursor: pointer;" onclick="filterByCompetitor('<%= competitor.pageId %>', '<%= competitor.pageName %>')">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <%= competitor.pageName %>
+                                                <i class="fas fa-filter ms-2 text-muted" style="font-size: 0.8em;" title="Click to filter ads by this competitor"></i>
+                                            </h6>
+                                            <div class="small text-muted mb-2">
+                                                <strong><%= competitor.totalAds %></strong> ads •
+                                                <strong><%= Math.round(competitor.totalImpressions.average).toLocaleString() %></strong> impressions •
+                                                <strong>$<%= Math.round(competitor.totalSpend.average).toLocaleString() %></strong> spend
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span class="badge bg-primary"><%= competitor.activeAds %> active</span>
+                                                <span class="badge bg-secondary"><%= competitor.platforms.length %> platforms</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Ads Results -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ad me-2"></i>Ads Results (<%= results.totalResults %> found)
+                        <% if (results.searchParams.pageId) { %>
+                            <span class="badge bg-info ms-2">Filtered by competitor</span>
+                        <% } %>
+                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <% if (results.searchParams.pageId) { %>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="clearCompetitorFilter()">
+                                <i class="fas fa-times me-1"></i>Clear Filter
+                            </button>
+                        <% } %>
+                        <small class="text-muted">Sorted by <%= results.searchParams.sortBy || 'impressions' %></small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <% if (results.ads.length === 0) { %>
+                        <div class="text-center py-4">
+                            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                            <h5>No ads found</h5>
+                            <p class="text-muted">Try adjusting your search criteria or filters.</p>
+                        </div>
+                    <% } else { %>
+                        <div class="row">
+                            <% results.ads.forEach(ad => { %>
+                                <div class="col-md-6 mb-4">
+                                    <div class="card ad-card h-100">
+                                        <div class="card-body">
+                                            <!-- Ad Preview -->
+                                            <% if (ad.snapshotUrl) { %>
+                                                <div class="ad-preview mb-3">
+                                                    <iframe src="<%= ad.snapshotUrl %>" 
+                                                            class="ad-preview" 
+                                                            frameborder="0" 
+                                                            scrolling="no"
+                                                            sandbox="allow-scripts allow-same-origin">
+                                                    </iframe>
+                                                </div>
+                                            <% } else { %>
+                                                <div class="ad-preview ad-preview-placeholder mb-3">
+                                                    <div class="text-center">
+                                                        <i class="fas fa-image fa-2x mb-2"></i><br>
+                                                        No preview available
+                                                    </div>
+                                                </div>
+                                            <% } %>
+                                            
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="card-title mb-0"><%= ad.pageName %></h6>
+                                                <% if (ad.snapshotUrl) { %>
+                                                    <a href="<%= ad.snapshotUrl %>" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-external-link-alt"></i>
+                                                    </a>
+                                                <% } %>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <% if (ad.creative.bodies && ad.creative.bodies.length > 0) { %>
+                                                    <p class="card-text small"><%= ad.creative.bodies[0].substring(0, 150) %>...</p>
+                                                <% } %>
+                                                <% if (ad.creative.linkTitles && ad.creative.linkTitles.length > 0) { %>
+                                                    <p class="card-text small text-primary"><strong><%= ad.creative.linkTitles[0] %></strong></p>
+                                                <% } %>
+                                            </div>
+
+                                            <div class="row mb-2">
+                                                <div class="col-12 mb-2">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="impressions-data">
+                                                            <i class="fas fa-eye me-1"></i>
+                                                            <% if (ad.impressions && ad.impressions.raw) { %>
+                                                                <%= ad.impressions.raw %> impressions
+                                                            <% } else if (ad.impressions && ad.impressions.average > 0) { %>
+                                                                ~<%= Math.round(ad.impressions.average).toLocaleString() %> impressions
+                                                            <% } else { %>
+                                                                No impression data
+                                                            <% } %>
+                                                        </span>
+                                                        <span class="spend-data">
+                                                            <i class="fas fa-dollar-sign me-1"></i>
+                                                            <% if (ad.spend && ad.spend.raw) { %>
+                                                                <%= ad.spend.raw %>
+                                                            <% } else if (ad.spend && ad.spend.average > 0) { %>
+                                                                ~$<%= Math.round(ad.spend.average) %>
+                                                            <% } else { %>
+                                                                No spend data
+                                                            <% } %>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <small class="text-muted">
+                                                        <% if (ad.impressions && ad.impressions.min && ad.impressions.max) { %>
+                                                            Range: <%= ad.impressions.min.toLocaleString() %> - <%= ad.impressions.max.toLocaleString() %> impressions
+                                                        <% } %>
+                                                        <% if (ad.spend && ad.spend.min && ad.spend.max && (ad.impressions && ad.impressions.min && ad.impressions.max)) { %>
+                                                            | 
+                                                        <% } %>
+                                                        <% if (ad.spend && ad.spend.min && ad.spend.max) { %>
+                                                            $<%= ad.spend.min %> - $<%= ad.spend.max %> spend
+                                                        <% } %>
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <% if (ad.deliveryStopTime) { %>
+                                                        <i class="fas fa-stop-circle text-danger me-1"></i>Inactive
+                                                    <% } else { %>
+                                                        <i class="fas fa-play-circle text-success me-1"></i>Active
+                                                    <% } %>
+                                                </small>
+                                                <small class="text-muted">
+                                                    <%= ad.platforms.join(', ') %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterByCompetitor(pageId, pageName) {
+            // Get current form data
+            const form = document.querySelector('form[action="/search"]');
+            const formData = new FormData(form);
+            
+            // Add pageId to form data
+            formData.set('pageId', pageId);
+            
+            // Create a new form to submit with pageId
+            const filterForm = document.createElement('form');
+            filterForm.method = 'POST';
+            filterForm.action = '/search';
+            
+            // Add all existing form data plus pageId
+            for (let [key, value] of formData.entries()) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                filterForm.appendChild(input);
+            }
+            
+            document.body.appendChild(filterForm);
+            filterForm.submit();
+        }
+        
+        function clearCompetitorFilter() {
+            // Get current form and submit without pageId
+            const form = document.querySelector('form[action="/search"]');
+            form.submit();
+        }
+    </script>
+</body>
+</html>
