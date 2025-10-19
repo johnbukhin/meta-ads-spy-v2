@@ -90,14 +90,18 @@ app.post('/search', async (req, res) => {
     // Sort results
     if (sortBy === 'spend') {
       filteredAds = analytics.sortAdsBySpend(filteredAds, sortOrder || 'desc');
+    } else if (sortBy === 'runtime') {
+      filteredAds = analytics.sortAdsByRuntime(filteredAds, sortOrder || 'desc');
+    } else if (sortBy === 'reach') {
+      filteredAds = analytics.sortAdsByReach(filteredAds, sortOrder || 'desc');
     } else {
-      filteredAds = analytics.sortAdsByImpressions(filteredAds, sortOrder || 'desc');
+      filteredAds = analytics.sortAdsByReach(filteredAds, sortOrder || 'desc');
     }
 
     // Get insights and competitor analysis
     const insights = analytics.getAdInsights(filteredAds);
     const competitors = analytics.getCompetitorAnalysis(filteredAds);
-    const topAds = analytics.getTopPerformingAds(filteredAds, sortBy || 'impressions', 10);
+    const topAds = analytics.getTopPerformingAds(filteredAds, sortBy || 'reach', 10);
 
     const results = {
       ads: filteredAds,
@@ -141,8 +145,12 @@ app.get('/api/search', async (req, res) => {
 
     if (sortBy === 'spend') {
       ads = analytics.sortAdsBySpend(ads, sortOrder);
+    } else if (sortBy === 'runtime') {
+      ads = analytics.sortAdsByRuntime(ads, sortOrder);
+    } else if (sortBy === 'reach') {
+      ads = analytics.sortAdsByReach(ads, sortOrder);
     } else {
-      ads = analytics.sortAdsByImpressions(ads, sortOrder);
+      ads = analytics.sortAdsByReach(ads, sortOrder);
     }
 
     const insights = analytics.getAdInsights(ads);

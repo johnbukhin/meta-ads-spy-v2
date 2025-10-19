@@ -4,6 +4,32 @@ class AdAnalytics {
     this.cacheExpiry = 30 * 60 * 1000; // 30 minutes
   }
 
+  sortAdsByReach(ads, sortOrder = 'desc') {
+    return ads.sort((a, b) => {
+      const aReach = a.reach?.euTotal || a.reach?.estimated || a.reach?.demographicBased?.estimated || 0;
+      const bReach = b.reach?.euTotal || b.reach?.estimated || b.reach?.demographicBased?.estimated || 0;
+      
+      if (sortOrder === 'desc') {
+        return bReach - aReach;
+      } else {
+        return aReach - bReach;
+      }
+    });
+  }
+
+  sortAdsByRuntime(ads, sortOrder = 'desc') {
+    return ads.sort((a, b) => {
+      const aRuntime = a.runtimeDays || 0;
+      const bRuntime = b.runtimeDays || 0;
+      
+      if (sortOrder === 'desc') {
+        return bRuntime - aRuntime;
+      } else {
+        return aRuntime - bRuntime;
+      }
+    });
+  }
+
   sortAdsByImpressions(ads, sortOrder = 'desc') {
     return ads.sort((a, b) => {
       const aImpressions = a.impressions.average;
@@ -181,10 +207,19 @@ class AdAnalytics {
     return filteredAds;
   }
 
-  getTopPerformingAds(ads, metric = 'impressions', limit = 10) {
-    const sortedAds = metric === 'spend' ? 
-      this.sortAdsBySpend(ads) : 
-      this.sortAdsByImpressions(ads);
+  getTopPerformingAds(ads, metric = 'reach', limit = 10) {
+    let sortedAds;
+    if (metric === 'spend') {
+      sortedAds = this.sortAdsBySpend(ads);
+    } else if (metric === 'runtime') {
+      sortedAds = this.sortAdsByRuntime(ads);
+    } else if (metric === 'reach') {
+      sortedAds = this.sortAdsByReach(ads);
+    } else if (metric === 'impressions') {
+      sortedAds = this.sortAdsByImpressions(ads);
+    } else {
+      sortedAds = this.sortAdsByReach(ads);
+    }
     
     return sortedAds.slice(0, limit);
   }

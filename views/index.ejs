@@ -114,6 +114,12 @@
             color: var(--accent-red) !important;
         }
         
+        .alert-info {
+            background-color: rgba(88, 166, 255, 0.1) !important;
+            border-color: var(--accent-blue) !important;
+            color: var(--accent-blue) !important;
+        }
+        
         .text-muted {
             color: var(--text-secondary) !important;
         }
@@ -152,14 +158,19 @@
             font-size: 0.9rem;
         }
         
-        .impressions-data {
+        .reach-data {
             font-weight: 600;
             color: var(--accent-green);
         }
         
-        .spend-data {
+        .runtime-data {
             font-weight: 600;
             color: var(--accent-orange);
+        }
+        
+        .targeting-data {
+            font-weight: 600;
+            color: var(--accent-blue);
         }
     </style>
 </head>
@@ -215,8 +226,8 @@
                     <div class="col-md-4 mb-3">
                         <label for="sortBy" class="form-label">Sort By</label>
                         <select class="form-select" id="sortBy" name="sortBy">
-                            <option value="impressions" <%= !results || results.searchParams.sortBy === 'impressions' ? 'selected' : '' %>>Impressions</option>
-                            <option value="spend" <%= results && results.searchParams.sortBy === 'spend' ? 'selected' : '' %>>Spend</option>
+                            <option value="reach" <%= !results || results.searchParams.sortBy === 'reach' ? 'selected' : '' %>>Reach</option>
+                            <option value="runtime" <%= results && results.searchParams.sortBy === 'runtime' ? 'selected' : '' %>>Runtime</option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
@@ -345,8 +356,18 @@
                                 <i class="fas fa-times me-1"></i>Clear Filter
                             </button>
                         <% } %>
-                        <small class="text-muted">Sorted by <%= results.searchParams.sortBy || 'impressions' %></small>
+                        <small class="text-muted">Sorted by <%= results.searchParams.sortBy || 'reach' %></small>
                     </div>
+                </div>
+                
+                <!-- Data Availability Info -->
+                <div class="alert alert-info mb-0" style="border-radius: 0; border-left: 0; border-right: 0;">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        <strong>Data Availability:</strong> 
+                        Reach data is available for EU/Brazil commercial ads and political ads globally. 
+                        Competitive intelligence includes targeting data and ad runtime analysis.
+                    </small>
                 </div>
                 <div class="card-body">
                     <% if (results.ads.length === 0) { %>
@@ -401,38 +422,82 @@
                                             <div class="row mb-2">
                                                 <div class="col-12 mb-2">
                                                     <div class="d-flex justify-content-between">
-                                                        <span class="impressions-data">
-                                                            <i class="fas fa-eye me-1"></i>
-                                                            <% if (ad.impressions && ad.impressions.raw) { %>
-                                                                <%= ad.impressions.raw %> impressions
-                                                            <% } else if (ad.impressions && ad.impressions.average > 0) { %>
-                                                                ~<%= Math.round(ad.impressions.average).toLocaleString() %> impressions
-                                                            <% } else { %>
-                                                                No impression data
+                                                        <div class="d-flex flex-column">
+                                                            <span class="reach-data">
+                                                                <i class="fas fa-users me-1"></i>
+                                                                <% if (ad.reach && ad.reach.euTotal) { %>
+                                                                    <%= ad.reach.euTotal.toLocaleString() %> EU reach
+                                                                <% } else if (ad.reach && ad.reach.estimated) { %>
+                                                                    <%= ad.reach.estimated.toLocaleString() %> est. reach
+                                                                <% } else if (ad.reach && ad.reach.demographicBased && ad.reach.demographicBased.estimated) { %>
+                                                                    ~<%= ad.reach.demographicBased.estimated.toLocaleString() %> reach
+                                                                <% } else if (ad.platforms && ad.platforms.length > 0) { %>
+                                                                    <span class="text-info">
+                                                                        <%= ad.platforms.length %> platform<%= ad.platforms.length > 1 ? 's' : '' %>
+                                                                        (<%= ad.platforms.slice(0, 2).join(', ') %><%= ad.platforms.length > 2 ? '+' : '' %>)
+                                                                    </span>
+                                                                <% } else { %>
+                                                                    <span class="text-muted" title="Limited data for commercial ads">Commercial ad</span>
+                                                                <% } %>
+                                                            </span>
+                                                            <% if (ad.reach && ad.reach.breakdown && ad.reach.breakdown.length > 0) { %>
+                                                                <small class="text-muted d-block">
+                                                                    <i class="fas fa-chart-pie me-1"></i>
+                                                                    <%= ad.reach.breakdown.length %> demographic segments
+                                                                </small>
+                                                            <% } else if (ad.creative && (ad.creative.bodies.length > 0 || ad.creative.linkTitles.length > 0)) { %>
+                                                                <small class="text-muted d-block">
+                                                                    <i class="fas fa-edit me-1"></i>
+                                                                    <%= (ad.creative.bodies.join(' ') + ad.creative.linkTitles.join(' ')).split(' ').length %> words in creative
+                                                                </small>
                                                             <% } %>
-                                                        </span>
-                                                        <span class="spend-data">
-                                                            <i class="fas fa-dollar-sign me-1"></i>
-                                                            <% if (ad.spend && ad.spend.raw) { %>
-                                                                <%= ad.spend.raw %>
-                                                            <% } else if (ad.spend && ad.spend.average > 0) { %>
-                                                                ~$<%= Math.round(ad.spend.average) %>
-                                                            <% } else { %>
-                                                                No spend data
+                                                        </div>
+                                                        <div class="d-flex flex-column">
+                                                            <span class="runtime-data">
+                                                                <i class="fas fa-clock me-1"></i>
+                                                                <% if (ad.runtimeDays > 0) { %>
+                                                                    <%= ad.runtimeDays %> days
+                                                                    <% if (ad.isActive) { %>
+                                                                        <span class="badge bg-success ms-1">Active</span>
+                                                                    <% } else { %>
+                                                                        <span class="badge bg-secondary ms-1">Ended</span>
+                                                                    <% } %>
+                                                                <% } else { %>
+                                                                    <span class="text-muted">No runtime data</span>
+                                                                <% } %>
+                                                            </span>
+                                                            <% if (ad.targeting && (ad.targeting.ages || ad.targeting.gender || ad.targeting.locations.length > 0)) { %>
+                                                                <small class="targeting-data mt-1">
+                                                                    <i class="fas fa-crosshairs me-1"></i>
+                                                                    <% if (ad.targeting.ages) { %>Ages: <%= ad.targeting.ages %><% } %>
+                                                                    <% if (ad.targeting.gender && ad.targeting.ages) { %> | <% } %>
+                                                                    <% if (ad.targeting.gender) { %>Gender: <%= ad.targeting.gender %><% } %>
+                                                                    <% if (ad.targeting.locations.length > 0) { %>
+                                                                        <% if (ad.targeting.ages || ad.targeting.gender) { %> | <% } %>
+                                                                        <%= ad.targeting.locations.length %> locations
+                                                                    <% } %>
+                                                                </small>
+                                                            <% } else if (ad.platforms && ad.platforms.length > 0) { %>
+                                                                <small class="targeting-data mt-1">
+                                                                    <i class="fas fa-broadcast-tower me-1"></i>
+                                                                    Platforms: <%= ad.platforms.join(', ') %>
+                                                                </small>
                                                             <% } %>
-                                                        </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-12">
                                                     <small class="text-muted">
-                                                        <% if (ad.impressions && ad.impressions.min && ad.impressions.max) { %>
-                                                            Range: <%= ad.impressions.min.toLocaleString() %> - <%= ad.impressions.max.toLocaleString() %> impressions
+                                                        <% if (ad.reach && ad.reach.breakdown && ad.reach.breakdown.length > 0) { %>
+                                                            Demographic breakdown: <%= ad.reach.breakdown.slice(0, 3).map(b => b.country + ' (' + Math.round(b.reach_estimate || 0) + ')').join(', ') %>
+                                                            <% if (ad.reach.breakdown.length > 3) { %> +<%= ad.reach.breakdown.length - 3 %> more<% } %>
                                                         <% } %>
-                                                        <% if (ad.spend && ad.spend.min && ad.spend.max && (ad.impressions && ad.impressions.min && ad.impressions.max)) { %>
-                                                            | 
-                                                        <% } %>
-                                                        <% if (ad.spend && ad.spend.min && ad.spend.max) { %>
-                                                            $<%= ad.spend.min %> - $<%= ad.spend.max %> spend
+                                                        <% if (ad.deliveryStartTime) { %>
+                                                            <% if (ad.reach && ad.reach.breakdown && ad.reach.breakdown.length > 0) { %> | <% } %>
+                                                            Started: <%= new Date(ad.deliveryStartTime).toLocaleDateString() %>
+                                                            <% if (ad.deliveryStopTime) { %>
+                                                                - <%= new Date(ad.deliveryStopTime).toLocaleDateString() %>
+                                                            <% } %>
                                                         <% } %>
                                                     </small>
                                                 </div>
