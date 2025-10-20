@@ -228,6 +228,55 @@ app.get('/competitors', async (req, res) => {
   }
 });
 
+// API endpoint for page suggestions (autocomplete)
+app.get('/api/pages/suggestions', async (req, res) => {
+  try {
+    const query = req.query.q || '';
+    
+    if (!query || query.length < 2) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // Search for pages with the query
+    const searchParams = {
+      searchTerms: query,
+      limit: 50
+    };
+
+    const response = await metaClient.searchAds(searchParams);
+    
+    // Extract unique pages with their info
+    const pagesMap = new Map();
+    response.ads.forEach(ad => {
+      if (ad.pageId && ad.pageName && !pagesMap.has(ad.pageId)) {
+        pagesMap.set(ad.pageId, {
+          pageId: ad.pageId,
+          pageName: ad.pageName,
+          avatarUrl: `https://graph.facebook.com/v18.0/${ad.pageId}/picture?type=small&access_token=${process.env.META_ACCESS_TOKEN}`
+        });
+      }
+    });
+
+    // Convert to array and limit results
+    const suggestions = Array.from(pagesMap.values())
+      .slice(0, 10)
+      .sort((a, b) => a.pageName.localeCompare(b.pageName));
+
+    res.json({
+      success: true,
+      data: suggestions
+    });
+
+  } catch (error) {
+    console.error('Page suggestions error:', error);
+    res.json({
+      success: false,
+      data: [],
+      error: error.message
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

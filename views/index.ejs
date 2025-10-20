@@ -172,6 +172,71 @@
             font-weight: 600;
             color: var(--accent-blue);
         }
+        
+        .autocomplete-container {
+            position: relative;
+        }
+        
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .autocomplete-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background-color: var(--bg-tertiary);
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+        
+        .autocomplete-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .autocomplete-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .autocomplete-id {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -202,9 +267,13 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="searchTerms" class="form-label">Search Terms</label>
-                        <input type="text" class="form-control" id="searchTerms" name="searchTerms" 
-                               placeholder="e.g., fitness, marketing, ecommerce"
-                               value="<%= results ? results.searchParams.searchTerms || '' : '' %>">
+                        <div class="autocomplete-container position-relative">
+                            <input type="text" class="form-control" id="searchTerms" name="searchTerms" 
+                                   placeholder="e.g., fitness, marketing, ecommerce"
+                                   value="<%= results ? results.searchParams.searchTerms || '' : '' %>"
+                                   autocomplete="off">
+                            <div id="autocompleteDropdown" class="autocomplete-dropdown"></div>
+                        </div>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="countries" class="form-label">Countries (comma-separated)</label>
@@ -239,29 +308,6 @@
                     </div>
                 </div>
 
-                <!-- Advanced Filters -->
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label for="minImpressions" class="form-label">Min Impressions</label>
-                        <input type="number" class="form-control" id="minImpressions" name="minImpressions" 
-                               value="<%= results ? results.searchParams.minImpressions || '' : '' %>">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="maxImpressions" class="form-label">Max Impressions</label>
-                        <input type="number" class="form-control" id="maxImpressions" name="maxImpressions"
-                               value="<%= results ? results.searchParams.maxImpressions || '' : '' %>">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="minSpend" class="form-label">Min Spend ($)</label>
-                        <input type="number" step="0.01" class="form-control" id="minSpend" name="minSpend"
-                               value="<%= results ? results.searchParams.minSpend || '' : '' %>">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label for="maxSpend" class="form-label">Max Spend ($)</label>
-                        <input type="number" step="0.01" class="form-control" id="maxSpend" name="maxSpend"
-                               value="<%= results ? results.searchParams.maxSpend || '' : '' %>">
-                    </div>
-                </div>
 
                 <button type="submit" class="btn btn-light btn-lg">
                     <i class="fas fa-search me-2"></i>Search Ads
@@ -559,6 +605,130 @@
             const form = document.querySelector('form[action="/search"]');
             form.submit();
         }
+        
+        // Autocomplete functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchTerms');
+            const dropdown = document.getElementById('autocompleteDropdown');
+            let debounceTimer;
+            let currentSuggestions = [];
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                clearTimeout(debounceTimer);
+                
+                if (query.length < 2) {
+                    hideDropdown();
+                    return;
+                }
+                
+                debounceTimer = setTimeout(() => {
+                    fetchSuggestions(query);
+                }, 300);
+            });
+            
+            searchInput.addEventListener('keydown', function(e) {
+                const items = dropdown.querySelectorAll('.autocomplete-item');
+                const activeItem = dropdown.querySelector('.autocomplete-item.active');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (activeItem) {
+                        activeItem.classList.remove('active');
+                        const next = activeItem.nextElementSibling || items[0];
+                        next.classList.add('active');
+                    } else if (items.length > 0) {
+                        items[0].classList.add('active');
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (activeItem) {
+                        activeItem.classList.remove('active');
+                        const prev = activeItem.previousElementSibling || items[items.length - 1];
+                        prev.classList.add('active');
+                    } else if (items.length > 0) {
+                        items[items.length - 1].classList.add('active');
+                    }
+                } else if (e.key === 'Enter') {
+                    if (activeItem) {
+                        e.preventDefault();
+                        selectSuggestion(activeItem.dataset.pageName);
+                    }
+                } else if (e.key === 'Escape') {
+                    hideDropdown();
+                }
+            });
+            
+            searchInput.addEventListener('blur', function() {
+                // Delay hiding to allow clicks on dropdown items
+                setTimeout(() => hideDropdown(), 150);
+            });
+            
+            function fetchSuggestions(query) {
+                fetch(`/api/pages/suggestions?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.data.length > 0) {
+                            currentSuggestions = data.data;
+                            showSuggestions(data.data);
+                        } else {
+                            hideDropdown();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching suggestions:', error);
+                        hideDropdown();
+                    });
+            }
+            
+            function showSuggestions(suggestions) {
+                dropdown.innerHTML = '';
+                
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.dataset.pageId = suggestion.pageId;
+                    item.dataset.pageName = suggestion.pageName;
+                    
+                    item.innerHTML = `
+                        <img src="${suggestion.avatarUrl}" alt="${suggestion.pageName}" class="autocomplete-avatar" onerror="this.style.display='none'">
+                        <div class="autocomplete-info">
+                            <div class="autocomplete-name">${suggestion.pageName}</div>
+                            <div class="autocomplete-id">ID: ${suggestion.pageId}</div>
+                        </div>
+                    `;
+                    
+                    item.addEventListener('click', function() {
+                        selectSuggestion(suggestion.pageName);
+                    });
+                    
+                    dropdown.appendChild(item);
+                });
+                
+                dropdown.style.display = 'block';
+            }
+            
+            function selectSuggestion(pageName) {
+                searchInput.value = pageName;
+                hideDropdown();
+                searchInput.focus();
+            }
+            
+            function hideDropdown() {
+                dropdown.style.display = 'none';
+                dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+            
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    hideDropdown();
+                }
+            });
+        });
     </script>
 </body>
 </html>
