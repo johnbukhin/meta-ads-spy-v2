@@ -1,16 +1,30 @@
 # Meta Ads Spy
 
-A lightweight Meta Ads spy service using the Meta Ads Library API to discover and analyze competitor ads, similar to BigSpy.com but focused on Meta platforms.
+A comprehensive Facebook/Meta advertising intelligence tool that helps analyze competitor advertising strategies and discover high-performing ads using the Meta Ads Library API.
 
 ## Features
 
-- **Ad Search**: Search for ads by keywords, countries, and date ranges
-- **Competitor Analysis**: Identify top competitors by impressions and spending
-- **Advanced Filtering**: Filter by impressions, spend, platforms, and activity status
-- **Sorting Options**: Sort ads by impressions or spend (ascending/descending)
-- **Visual Dashboard**: Clean, responsive web interface with insights and metrics
-- **Rate Limiting**: Built-in rate limiting to comply with Meta API limits (200 calls/hour)
-- **Caching**: 30-minute cache to reduce API calls and improve performance
+🔍 **Smart Search**
+- Search ads by keywords with automatic page detection
+- Real-time autocomplete with competitor page suggestions
+- Filter by countries, platforms, and date ranges
+
+📊 **Advanced Analytics**
+- EU reach data for enhanced insights
+- Competitor analysis with aggregated metrics
+- Sort by reach, spend, or runtime
+- Top performing ads identification
+
+🎨 **Modern UI**
+- Dark theme optimized for professional use
+- Responsive design for all devices
+- Simplified interface with essential filters
+- Facebook page avatars and ad snapshots
+
+⚡ **Performance**
+- 30-minute intelligent caching
+- Rate limiting compliance
+- Debounced search with keyboard navigation
 
 ## Prerequisites
 
@@ -126,19 +140,23 @@ GET /api/page/:pageId
 
 ```
 meta-ads-spy/
+├── server.js              # Express server and routes
 ├── lib/
-│   └── metaAdsClient.js     # Meta API client
+│   └── metaAdsClient.js   # Meta API client
 ├── services/
-│   └── adAnalytics.js       # Analytics and data processing
+│   └── adAnalytics.js     # Data processing and analytics
 ├── views/
-│   ├── index.ejs           # Main search interface
-│   ├── competitors.ejs     # Competitor analysis page
-│   └── error.ejs           # Error page template
-├── public/                 # Static assets
-├── server.js              # Express server
-├── package.json
-└── README.md
+│   └── index.ejs          # Main UI template
+├── CLAUDE.md              # Claude Code context documentation
+├── REQUIREMENTS.md        # Product requirements document
+└── README.md              # This file
 ```
+
+## Development
+
+For Claude Code sessions, start by reading:
+1. `CLAUDE.md` - Full project context and technical details
+2. `REQUIREMENTS.md` - Product requirements and feature roadmap
 
 ## Key Features Explained
 
