@@ -1,10 +1,10 @@
 // API Endpoint: /api/extract-ad-image
 // Add this file to your existing meta-ads-spy-v2/api/ directory
 
-import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 
-export default async function handler(req, res) {
+async function handler(req, res) {
     // Enable CORS for n8n
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -206,3 +206,6 @@ export default async function handler(req, res) {
         });
     }
 }
+
+// Export for CommonJS
+module.exports = handler;

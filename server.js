@@ -277,6 +277,15 @@ app.get('/api/pages/suggestions', async (req, res) => {
   }
 });
 
+// Facebook Ad Image Extraction API endpoint
+app.all('/api/extract-ad-image', async (req, res) => {
+  // Import the handler function
+  const extractAdImageHandler = require('./api/extract-ad-image');
+  
+  // Call the handler with req and res
+  return await extractAdImageHandler(req, res);
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
