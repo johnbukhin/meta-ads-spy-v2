@@ -20,7 +20,7 @@
   ],
   "routes": [
     {
-      "src": "/api/extract-ad-image",
+      "src": "/api/extract-ad-image(.*)",
       "dest": "/api/extract-ad-image.js"
     },
     {
