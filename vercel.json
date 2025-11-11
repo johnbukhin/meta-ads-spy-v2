@@ -1,27 +1,18 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/extract-ad-image.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "views/**",
-      "use": "@vercel/static"
+  "functions": {
+    "api/extract-ad-image.js": {
+      "maxDuration": 60
     }
-  ],
+  },
   "routes": [
     {
-      "src": "/api/extract-ad-image(.*)",
+      "src": "/api/extract-ad-image",
       "dest": "/api/extract-ad-image.js"
+    },
+    {
+      "src": "/api/test-endpoint", 
+      "dest": "/api/test-endpoint.js"
     },
     {
       "src": "/api/(.*)",
@@ -32,11 +23,6 @@
       "dest": "/api/index.js"
     }
   ],
-  "functions": {
-    "api/extract-ad-image.js": {
-      "maxDuration": 60
-    }
-  },
   "env": {
     "NODE_ENV": "production"
   }
