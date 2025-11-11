@@ -53,7 +53,14 @@ async function handler(req, res) {
         console.log('🚀 Launching browser for image extraction...');
         
         // Configure Chromium for Vercel serverless environment
-        await chromium.font('https://raw.githack.com/googlei18n/noto-emoji/master/fonts/NotoColorEmoji.ttf');
+        try {
+            await chromium.font('https://raw.githack.com/googlei18n/noto-emoji/master/fonts/NotoColorEmoji.ttf');
+        } catch (fontError) {
+            console.log('Font loading skipped:', fontError.message);
+        }
+
+        const executablePath = await chromium.executablePath();
+        console.log('Using Chromium executable:', executablePath);
 
         browser = await puppeteer.launch({
             args: [
@@ -69,10 +76,11 @@ async function handler(req, res) {
                 '--disable-features=VizDisplayCompositor',
                 '--disable-background-timer-throttling',
                 '--disable-backgrounding-occluded-windows',
-                '--disable-renderer-backgrounding'
+                '--disable-renderer-backgrounding',
+                '--single-process'
             ],
             defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath(),
+            executablePath: executablePath,
             headless: chromium.headless,
             timeout: timeout
         });
